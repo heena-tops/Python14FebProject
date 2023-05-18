@@ -1,0 +1,20 @@
+{% extends 'header.html' %}
+{% load static %}
+{% block content %}
+
+<div>
+	
+	<p>{{msg}}</p>
+	<p>Your Name : {{user.fname}}</p>
+	<p>Payment Status : {{cart.payment}}</p>
+	<p>Order ID : {{cart.razorpay_order_id}}</p>
+
+	<div class="btn-box">
+       <a href="{% url 'index' %}">
+       Back To Home
+       </a>
+    </div>
+
+</div>
+
+{% endblock %}

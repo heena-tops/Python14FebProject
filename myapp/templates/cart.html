@@ -1,0 +1,140 @@
+{% extends 'header.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+   <head>
+      
+   </head>
+   <body class="sub_page">
+      <div class="hero_area">
+         
+      <!-- inner page section -->
+      <section class="inner_page_head">
+         <div class="container_fuild">
+            <div class="row">
+               <div class="col-md-12">
+                  <div class="full">
+                     <h3>Product Grid</h3>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+      <!-- end inner page section -->
+      <!-- product section -->
+      <section class="product_section layout_padding">
+
+         {% if request.session.email %}
+         <div class="container">
+            <div class="heading_container heading_center">
+               {% if request.session.cart_count %}
+                  <h2>
+                     Cart <span>products</span>
+                  </h2>
+               {% else %}
+                  <h2>
+                     No Products In<span>Cart</span>
+                  </h2>
+               {% endif %}
+            </div>
+            <div class="row">
+               {% for i in cart %}
+               <div class="col-sm-6 col-md-4 col-lg-4">
+                  <div class="box">
+                     <div class="img-box">
+                        <img src="{{ i.product.product_image.url }}" alt="">
+                     </div>
+                     <div class="detail-box">
+                        <h5>
+                           {{i.product.product_name}}
+                        </h5>
+                        <h6>
+                           {{i.product.product_price}}
+                        </h6>
+                     </div>
+                     <div>
+                        <form action="{% url 'change_qty' pk=i.product.pk %}" method="post">
+                           {% csrf_token %}
+                           <input type="number" name="qty" max="50" min="1" value="{{i.product_qty}}" onchange="this.form.submit()"/>
+                        </form>
+                     </div>
+                     <div>
+                        <h6>
+                           Total : {{i.product_price}}
+                        </h6>
+                     </div>
+                     <div class="btn-box">
+                        <a href="{% url 'remove_from_cart' pk=i.product.pk %}">
+                        remove from Cart
+                        </a>
+                     </div>
+                  </div>
+               </div>
+               {% endfor %}
+            </div>
+            <div style="padding:30px;">
+               <h5>
+                  Net Amount : {{net_price}}
+               </h5>
+            </div>
+            <div class="btn-box">
+               <button id="rzp-button1">Proceed to Checkout</button>
+            </div>
+         </div>
+
+         {% else %}
+
+            <div class="btn-box">
+               <a href="{% url 'login' %}">
+               Login
+               </a>
+            </div>
+
+         {% endif %}
+
+      </section>
+      <!-- end product section -->
+
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      <script>
+      var options = {
+          "key": "rzp_test_RDK6XMTmZvZRyl", // Enter the Key ID generated from the Dashboard
+          "amount": "{{net_price}}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+          "currency": "INR",
+          "name": "Ecomm",
+          "description": "Test Transaction",
+          "image": "https://example.com/your_logo",
+          "order_id": "{{cart.razorpay_order_id}}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+          "handler": function (response){
+
+               window.location.href=`http://localhost:8000/success?razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}&razorpay_signature=${response.razorpay_signature}`
+
+              alert(response.razorpay_payment_id);
+              alert(response.razorpay_order_id);
+              alert(response.razorpay_signature)
+          },
+          "theme": {
+              "color": "#3399cc"
+          }
+      };
+      var rzp1 = new Razorpay(options);
+      rzp1.on('payment.failed', function (response){
+              alert(response.error.code);
+              alert(response.error.description);
+              alert(response.error.source);
+              alert(response.error.step);
+              alert(response.error.reason);
+              alert(response.error.metadata.order_id);
+              alert(response.error.metadata.payment_id);
+      });
+      document.getElementById('rzp-button1').onclick = function(e){
+          rzp1.open();
+          e.preventDefault();
+      }
+      </script>
+
+
+</body>
+</html>
+{% endblock %}
